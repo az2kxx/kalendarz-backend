@@ -14,7 +14,7 @@ export const prisma = new PrismaClient();
 
 const allowedOrigins = [
     'http://localhost:5173', 
-    'https://kalendarz-frontend.vercel.app/' 
+    'https://kalendarz-frontend.vercel.app' 
 ];
 
 if (process.env.FRONTEND_URL) {
