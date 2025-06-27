@@ -6,6 +6,7 @@ import { PrismaClient } from '@prisma/client';
 import authRoutes from './api/auth/auth.routes';
 import availabilityRoutes from './api/availability/availability.routes';
 import bookingRoutes from './api/booking/booking.routes';
+import adminRoutes from './api/admin/admin.routes'; 
 
 const app = express();
 export const prisma = new PrismaClient();
@@ -33,5 +34,6 @@ app.get('/api', (req, res) => res.send('CALX API is healthy!'));
 app.use('/api/auth', authRoutes);
 app.use('/api/availability', availabilityRoutes);
 app.use('/api/booking', bookingRoutes);
+app.use('/api/admin/bookings', adminRoutes);
 
 export default app;
