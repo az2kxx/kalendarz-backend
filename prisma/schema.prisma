@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql" // Ustawiamy domyślnie na PostgreSQL dla Heroku
+  provider = "postgressql" 
   url      = env("DATABASE_URL")
 }
 
