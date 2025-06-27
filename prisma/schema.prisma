@@ -1,0 +1,45 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // Ustawiamy domyślnie na PostgreSQL dla Heroku
+  url      = env("DATABASE_URL")
+}
+
+// Reszta modeli pozostaje bez zmian
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  password     String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  availabilities Availability[]
+  bookings       Booking[]      @relation("HostBookings")
+}
+
+model Availability {
+  id        String   @id @default(cuid())
+  dayOfWeek Int
+  startTime String
+  endTime   String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([userId, dayOfWeek])
+}
+
+model Booking {
+  id         String   @id @default(cuid())
+  startTime  DateTime
+  endTime    DateTime
+  guestName  String
+  guestEmail String
+  hostId     String
+  host       User     @relation("HostBookings", fields: [hostId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
