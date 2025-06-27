@@ -1,7 +1,7 @@
 {
   "name": "calx",
   "version": "1.0.0",
-  "description": "A simple Calendly clone backend for Heroku",
+  "description": "platforma do bookowania spotkań sprzedazowych",
   "main": "dist/server.js",
   "scripts": {
     "dev": "nodemon src/server.ts",
