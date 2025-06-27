@@ -1,4 +1,4 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
 export type BookingWithHost = {
   id: string;
@@ -12,13 +12,18 @@ export type BookingWithHost = {
   };
 };
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 
-
-const MY_VERIFIED_GMAIL_ADDRESS = "azebrowskipriority@gmail.com"; 
+const transporter = nodemailer.createTransport({
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true, 
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_APP_PASSWORD, 
+  },
+});
 
 const MEETING_LINK = "https://meet.google.com/twoj-prywatny-link";
-
 
 
 export const sendBookingConfirmationEmail = async (booking: BookingWithHost) => {
@@ -31,15 +36,14 @@ export const sendBookingConfirmationEmail = async (booking: BookingWithHost) => 
   });
 
   try {
-    const emailToGuest = {
-      from: MY_VERIFIED_GMAIL_ADDRESS, 
-      to: [MY_VERIFIED_GMAIL_ADDRESS],  
-      subject: `[TEST GOŚĆ] Potwierdzenie rezerwacji z ${host.name}`, 
+    const mailToGuestOptions = {
+      from: `CalX <${process.env.GMAIL_USER}>`, 
+      to: guestEmail, 
+      subject: `Potwierdzenie rezerwacji spotkania z ${host.name}`,
       html: `
         <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
           <h2>Cześć ${guestName},</h2>
           <p>Twoje spotkanie z <strong>${host.name}</strong> zostało pomyślnie zarezerwowane!</p>
-          <p><em>(To jest mail testowy wysłany na adres ${MY_VERIFIED_GMAIL_ADDRESS} zamiast na ${guestEmail})</em></p>
           <hr style="border: 0; border-top: 1px solid #eee;">
           <h3>Szczegóły spotkania:</h3>
           <ul>
@@ -55,37 +59,36 @@ export const sendBookingConfirmationEmail = async (booking: BookingWithHost) => 
               Dołącz do spotkania
             </a>
           </p>
+          <p>Pozdrawiamy,<br>Zespół CalX</p>
         </div>
       `,
     };
 
-    const emailToHost = {
-      from: MY_VERIFIED_GMAIL_ADDRESS,
-      to: [MY_VERIFIED_GMAIL_ADDRESS],
-      subject: `[TEST HOST] Nowa rezerwacja od ${guestName}!`,
+    const mailToHostOptions = {
+      from: `CalX Notyfikacje <${process.env.GMAIL_USER}>`,
+      to: host.email, 
+      subject: `Nowa rezerwacja od ${guestName}!`,
       html: `
         <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
           <h2>Nowe spotkanie w Twoim kalendarzu!</h2>
           <p><strong>${guestName}</strong> (${guestEmail}) właśnie zarezerwował(a) z Tobą spotkanie.</p>
-          <p><em>(To jest mail testowy wysłany na adres ${MY_VERIFIED_GMAIL_ADDRESS} zamiast na ${host.email})</em></p>
           <hr style="border: 0; border-top: 1px solid #eee;">
           <h3>Szczegóły spotkania:</h3>
           <ul>
             <li><strong>Kiedy:</strong> ${meetingTime}</li>
             <li><strong>Link do spotkania:</strong> <a href="${MEETING_LINK}">${MEETING_LINK}</a></li>
           </ul>
+          <p>Szczegóły rezerwacji znajdziesz w swoim panelu CalX.</p>
         </div>
       `,
     };
 
-    await Promise.all([
-        resend.emails.send(emailToGuest),
-        resend.emails.send(emailToHost)
-    ]);
+    await transporter.sendMail(mailToGuestOptions);
+    await transporter.sendMail(mailToHostOptions);
 
-    console.log(`Successfully sent TEST confirmation emails to ${MY_VERIFIED_GMAIL_ADDRESS}`);
+    console.log(`Successfully sent confirmation emails for booking ${booking.id} to ${guestEmail} and ${host.email}`);
 
   } catch (error) {
-    console.error('Error sending TEST email via Resend:', error);
+    console.error('Error sending email via GMail SMTP:', error);
   }
 };
