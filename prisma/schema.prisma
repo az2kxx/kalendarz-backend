@@ -37,6 +37,7 @@ model Booking {
   endTime    DateTime
   guestName  String
   guestEmail String
+  notes      String? 
   hostId     String
   host       User     @relation("HostBookings", fields: [hostId], references: [id], onDelete: Cascade)
   createdAt  DateTime @default(now())
