@@ -5,11 +5,10 @@ import type { Prisma } from '@prisma/client';
 
 export const setAvailability = async (req: AuthRequest, res: Response) => {
   const userId = req.user!.id;
-  // Oczekujemy tablicy obiektów, np. [{ dayOfWeek: 1, startTime: "09:00", endTime: "17:00" }]
   const { availabilities } = req.body;
 
   try {
-    // Używamy transakcji, aby usunąć stare i wstawić nowe w jednej operacji
+    
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       await tx.availability.deleteMany({ where: { userId } });
       await tx.availability.createMany({

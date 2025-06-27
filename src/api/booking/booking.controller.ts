@@ -3,37 +3,34 @@ import { prisma } from '../../app';
 import { validationResult } from 'express-validator';
 import { sendBookingConfirmationEmail } from '../../services/email.service';
 
-// Funkcja do znajdowania wolnych slotów - CORE LOGIC
 export const getAvailableSlots = async (req: Request, res: Response) => {
   const { userId } = req.params;
-  const { date } = req.query; // Oczekiwany format YYYY-MM-DD
+  const { date } = req.query; 
 
   if (!date || typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
     return res.status(400).json({ message: 'Valid date query parameter in YYYY-MM-DD format is required.' });
   }
 
   try {
-    const requestedDate = new Date(date + 'T00:00:00.000Z'); // Używamy UTC
+    const requestedDate = new Date(date + 'T00:00:00.000Z'); 
     const dayOfWeek = requestedDate.getUTCDay();
 
-    // 1. Znajdź reguły dostępności dla tego dnia tygodnia
     const availability = await prisma.availability.findFirst({
       where: { userId, dayOfWeek },
     });
 
     if (!availability) {
-      return res.json([]); // Brak dostępności w ten dzień
+      return res.json([]); 
     }
 
-    // 2. Znajdź wszystkie rezerwacje na ten dzień
     const startOfDay = new Date(date + 'T00:00:00.000Z');
     const endOfDay = new Date(date + 'T23:59:59.999Z');
     const bookings = await prisma.booking.findMany({
       where: { hostId: userId, startTime: { gte: startOfDay, lte: endOfDay } },
     });
 
-    // 3. Generuj potencjalne sloty i odfiltruj zajęte
-    const slotDuration = 30; // w minutach
+    
+    const slotDuration = 30;
     const availableSlots = [];
 
     const [startHour, startMinute] = availability.startTime.split(':').map(Number);
@@ -48,7 +45,6 @@ export const getAvailableSlots = async (req: Request, res: Response) => {
     while (currentSlotTime < endTime) {
       const slotEndTime = new Date(currentSlotTime.getTime() + slotDuration * 60000);
 
-      // Sprawdź, czy slot nie koliduje z istniejącą rezerwacją
       const isBooked = bookings.some(
         (booking: { startTime: Date; endTime: Date }) =>
           (currentSlotTime >= booking.startTime && currentSlotTime < booking.endTime) ||
@@ -78,13 +74,12 @@ export const createBooking = async (req: Request, res: Response) => {
 
   const { userId } = req.params;
   const { startTime, guestName, guestEmail } = req.body;
-  const slotDuration = 30; // minuty
+  const slotDuration = 30; 
 
   try {
     const bookingStartTime = new Date(startTime);
     const bookingEndTime = new Date(bookingStartTime.getTime() + slotDuration * 60000);
 
-    // WAŻNE: Sprawdź ponownie dostępność, aby uniknąć "race condition"
     const existingBooking = await prisma.booking.findFirst({
       where: {
         hostId: userId,
@@ -118,7 +113,6 @@ export const createBooking = async (req: Request, res: Response) => {
       });
     
 
-    // Wyślij powiadomienie email (async)
     sendBookingConfirmationEmail(booking);
 
     res.status(201).json(booking);
