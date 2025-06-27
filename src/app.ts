@@ -11,12 +11,16 @@ import adminRoutes from './api/admin/admin.routes';
 const app = express();
 export const prisma = new PrismaClient();
 
-const allowedOrigins = process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : [];
-if (process.env.NODE_ENV !== 'production') {
-    allowedOrigins.push('http://localhost:3000'); 
-    allowedOrigins.push('http://localhost:5173'); 
-    allowedOrigins.push('https://kalendarz-frontend.vercel.app/'); 
+
+const allowedOrigins = [
+    'http://localhost:5173', 
+    'https://kalendarz-frontend.vercel.app/' 
+];
+
+if (process.env.FRONTEND_URL) {
+    allowedOrigins.push(process.env.FRONTEND_URL);
 }
+
 
 const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
@@ -26,9 +30,13 @@ const corsOptions: cors.CorsOptions = {
       callback(new Error('Not allowed by CORS'));
     }
   },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true 
 };
 
 app.use(cors(corsOptions));
+
+
 app.use(express.json());
 
 app.get('/api', (req, res) => res.send('CALX API is healthy!'));
