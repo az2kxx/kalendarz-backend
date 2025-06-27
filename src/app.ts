@@ -15,6 +15,7 @@ const allowedOrigins = process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : [
 if (process.env.NODE_ENV !== 'production') {
     allowedOrigins.push('http://localhost:3000'); 
     allowedOrigins.push('http://localhost:5173'); 
+    allowedOrigins.push('https://kalendarz-frontend.vercel.app/'); 
 }
 
 const corsOptions: cors.CorsOptions = {
